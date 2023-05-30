@@ -22,18 +22,16 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        log.info("Create a film with id = {} ", film.getId());
         return filmStorage.createFilm(film);
     }
 
     public Film updateFilm(Film film) {
-        log.info("Update the film with id = {} ", film.getId());
         return filmStorage.updateFilm(film);
     }
 
-    public List<Film> getAllFilms() {
-        log.info("GET {} films", filmStorage.getAllFilms().size());
-        return filmStorage.getAllFilms();
+    public List <Film> getAllFilms() {
+        List <Film> films = filmStorage.getAllFilms();
+        return films;
     }
 
     public Film getFilmById(int filmId) {

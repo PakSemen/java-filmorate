@@ -25,19 +25,17 @@ public class UserService {
 
     public User createUser(User user) {
         validateUserName(user);
-        log.info("The user with id = {} has been created, ", user.getId());
         return userStorage.createUser(user);
     }
 
     public User updateUser(User user) {
         validateUserName(user);
-        log.info("The user with id = {} {}", user.getId(), " has been updated");
         return userStorage.updateUser(user);
     }
 
-    public List<User> getAllUsers() {
-        log.info("Get {} users ", userStorage.getAllUsers().size());
-        return userStorage.getAllUsers();
+    public List <User>getAllUsers() {
+        List<User> users = userStorage.getAllUsers();
+        return users;
     }
 
     public User getUserById(long id) {

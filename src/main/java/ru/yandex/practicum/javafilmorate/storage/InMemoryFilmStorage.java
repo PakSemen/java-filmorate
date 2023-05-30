@@ -11,27 +11,25 @@ import java.util.*;
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private int filmId = 1;
+    private int filmId = 0;
     private final Map<Integer, Film> films = new HashMap<>();
 
     @Override
     public Film createFilm(Film film) {
-        film.setId(filmId);
+        film.setId(++filmId);
         films.put(filmId, film);
-        filmId++;
         log.info("Create a film with id = {} ", film.getId());
         return film;
     }
 
     @Override
     public Optional<Film> getFilmById(Integer id) {
-        log.info("Get the film by id = {}", id);
         return Optional.ofNullable(films.get(id));
     }
 
     @Override
     public List<Film> getAllFilms() {
-        log.info("Get {} films", films.values().size());
+        log.info("Get all films");
         return new ArrayList<>(films.values());
     }
 
@@ -41,8 +39,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(id)) {
             films.put(id, film);
             log.info("The film with id = {} has been updated", film.getId());
+            log.info("Updated film name:", film.getName(),", new description:", film.getDescription(),", new releaseDate:",
+                    film.getReleaseDate(),", new duration:",film.getDuration());
         } else {
-            log.warn("This film doesn't existed");
+            log.error("This film doesn't existed");
             throw new NotFoundException("This film doesn't existed");
         }
         log.info("The film with filmId = {} {}", id, "has been updated");
