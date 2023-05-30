@@ -25,8 +25,8 @@ public class FilmController {
     }
 
     @GetMapping
-    public List getAllFilms() {
-        List films = filmService.getAllFilms();
+    public List<Film> getAllFilms() {
+        List<Film> films = filmService.getAllFilms();
         log.info("Get {} films", films.size());
         return films;
     }

@@ -29,8 +29,8 @@ public class FilmService {
         return filmStorage.updateFilm(film);
     }
 
-    public List <Film> getAllFilms() {
-        List <Film> films = filmStorage.getAllFilms();
+    public List<Film> getAllFilms() {
+        List<Film> films = filmStorage.getAllFilms();
         return films;
     }
 
