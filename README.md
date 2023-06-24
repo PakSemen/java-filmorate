@@ -33,5 +33,10 @@ Template repository for Filmorate project.
                description
         FROM Film;
 
-2.Запросить список людей лайкнувших фильм "Крепкий орешек"("Die Hard")  
-        SELECT 
+2.Запросить список людей лайкнувших фильм "Крепкий орешек"("Die hard")  
+
+        SELECT u.name
+        FROM Film AS f
+        INNER JOIN Like AS l
+        INNER JOIN User AS u
+        WHERE f.name = 'Die hard';
