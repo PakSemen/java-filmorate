@@ -8,9 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import ru.yandex.practicum.javafilmorate.model.User;
+import ru.yandex.practicum.javafilmorate.service.UserService;
+import ru.yandex.practicum.javafilmorate.storage.InMemoryUserStorage;
 
 import javax.validation.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,13 +25,19 @@ class UserControllerTest {
     private static UserController userController;
     private User user;
     private Validator validator;
-
+    private Set<Long> friends = new HashSet<>();
 
     @BeforeEach
     void beforeEach() {
-        userController = new UserController();
-        user = new User(0, "mail@mail.ru", "dolore", "Nick Name",
-                LocalDate.of(1895, 12, 28));
+        userController = new UserController(new UserService(new InMemoryUserStorage()));
+        user = User.builder()
+                .id(0)
+                .email("mail@mail.ru")
+                .login("dolore")
+                .name("Nick Name")
+                .birthday(LocalDate.of(1885, 12, 28))
+                .build();
+
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
@@ -37,7 +46,7 @@ class UserControllerTest {
     @Test
     void shouldCreateUser() {
         userController.createUser(user);
-        List<User> listUser = userController.getUsers();
+        List<User> listUser = userController.getAllUsers();
         assertEquals(1, listUser.size(), "Number of users isn't correct");
         assertEquals(user.getEmail(), listUser.get(0).getEmail(), "User's email isn't correct");
         assertEquals(user.getName(), listUser.get(0).getName(), "User's name isn't correct");
@@ -109,7 +118,7 @@ class UserControllerTest {
     void shouldCreateUserWithEmptyName() {
         user.setName("");
         userController.createUser(user);
-        List<User> listUser = userController.getUsers();
+        List<User> listUser = userController.getAllUsers();
         assertEquals(1, listUser.size(), "Number of users isn't correct");
         assertEquals(user.getLogin(), listUser.get(0).getName(), "User's name isn't correct");
     }
@@ -122,7 +131,7 @@ class UserControllerTest {
         user.setBirthday(LocalDate.of(1995, 12, 28));
         user.setLogin("ant");
         userController.updateUser(user);
-        List<User> listUser = userController.getUsers();
+        List<User> listUser = userController.getAllUsers();
         assertEquals(1, listUser.size(), "Number of users isn't correct");
         assertEquals(user.getEmail(), listUser.get(0).getEmail(), "User's email isn't correct");
         assertEquals(user.getName(), listUser.get(0).getName(), "User's name isn't correct");
@@ -201,7 +210,7 @@ class UserControllerTest {
         userController.createUser(user);
         user.setName("");
         userController.updateUser(user);
-        List<User> listUser = userController.getUsers();
+        List<User> listUser = userController.getAllUsers();
         assertEquals(user.getLogin(), listUser.get(0).getName(), "User's name isn't correct");
 
     }
