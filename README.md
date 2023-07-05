@@ -1,7 +1,7 @@
 # java-filmorate
 Template repository for Filmorate project.  
-[ER-модель](https://github.com/PakSemen/java-filmorate/blob/add_database/Shema.png)  
-![схема](/Shema.png)
+[ER-модель](https://github.com/PakSemen/java-filmorate/blob/add_database/Shem.png)  
+![схема](/Shem.png)
 Пояснения к схеме:   
 1. Film - таблица фильмов, содержащая:
   - id фильма
