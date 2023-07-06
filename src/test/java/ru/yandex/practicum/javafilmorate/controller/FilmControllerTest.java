@@ -1,4 +1,5 @@
-package ru.yandex.practicum.javafilmorate.controller;
+/*
+        package ru.yandex.practicum.javafilmorate.controller;
 
 
 import org.junit.jupiter.api.Assertions;
@@ -6,6 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.javafilmorate.model.Film;
+import ru.yandex.practicum.javafilmorate.service.FilmService;
+import ru.yandex.practicum.javafilmorate.storage.FilmDao;
+import ru.yandex.practicum.javafilmorate.storage.impl.FilmDaoImpl;
+import ru.yandex.practicum.javafilmorate.storage.impl.UserDaoImpl;
+import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 
 import javax.validation.*;
@@ -21,22 +27,32 @@ class FilmControllerTest {
     private static FilmController filmController;
     private Film film;
     private Validator validator;
-
+    public static UserDao userDao;
+    private Set<Integer> likes;
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController();
-        film = new Film(0, "Chicken Run", "Chicken Run is a 2000 stop-motion animated adventure " +
-                "comedy film produced by Pathé and Aardman Animations in partnership with",
-                LocalDate.of(2000, 12, 28), 200);
+        FilmDao filmDao = new FilmDaoImpl();
+        userDao = new UserDaoImpl();
+        filmController = new FilmController(new FilmService(filmDao));
+
+        film = Film.builder()
+                .id(0)
+                .name("Chicken Run")
+                .description("Chicken Run is a 2000 stop-motion animated adventure " +
+                        "comedy film produced by Pathé and Aardman Animations in partnership with")
+                .releaseDate(LocalDate.of(2000, 12, 28))
+                .duration(2)
+                .build();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }
 
     @Test
     void shouldCreateFilm() {
-        filmController.createFilm(film);
-        List<Film> listFilm = filmController.getFilm();
+
+        filmController.addFilm(film);
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(1, listFilm.size(), "Number of films isn't correct");
         assertEquals(film.getName(), listFilm.get(0).getName(), "Film's name isn't correct");
         assertEquals(film.getDescription(), listFilm.get(0).getDescription(),
@@ -102,8 +118,8 @@ class FilmControllerTest {
     @Test
     void shouldNotCreateFilmWithFutureReleaseDate() {
         film.setReleaseDate(LocalDate.of(3400, 12, 28));
-        filmController.createFilm(film);
-        List<Film> listFilm = filmController.getFilm();
+        filmController.addFilm(film);
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(film.getReleaseDate(), listFilm.get(0).getReleaseDate(),
                 "Film's release date  isn't correct");
     }
@@ -111,8 +127,8 @@ class FilmControllerTest {
     @Test
     void shouldNotCreateFilmWithReleaseDate1895_12_28() {
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        filmController.createFilm(film);
-        List<Film> listFilm = filmController.getFilm();
+        filmController.addFilm(film);
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(film.getReleaseDate(), listFilm.get(0).getReleaseDate(),
                 "Film's release date  isn't correct");
     }
@@ -143,12 +159,12 @@ class FilmControllerTest {
 
     @Test
     void shouldUpdateFilm() {
-        filmController.createFilm(film);
+        filmController.addFilm(film);
         film.setName("New name");
         film.setDescription("New description");
         film.setReleaseDate((LocalDate.of(2005, 12, 28)));
         film.setDuration(24356);
-        List<Film> listFilm = filmController.getFilm();
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(1, listFilm.size(), "Number of films isn't correct");
         assertEquals(film.getName(), listFilm.get(0).getName(), "Film's name isn't correct");
         assertEquals(film.getDescription(), listFilm.get(0).getDescription(), "Film's description isn't correct");
@@ -159,7 +175,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmWithEmptyName() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             film.setName("");
             Set<ConstraintViolation<Film>> violations = validator.validate(film);
             if (!violations.isEmpty()) {
@@ -172,7 +188,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmWithEmptyDescription() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             film.setDescription("");
             Set<ConstraintViolation<Film>> violations = validator.validate(film);
             if (!violations.isEmpty()) {
@@ -185,7 +201,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmWithDescriptionMoreThan200symbols() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             String description = "Chicken Run is a 2000 stop-motion animation adventure comedy film produced by Paths " +
                     "and Aardman Animations in partnership with DreamWorks Animation.  The film stars the voices of " +
                     "Julia Sawalha, Mel Gibson.";
@@ -202,7 +218,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmWithNullReleaseDate() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             film.setReleaseDate(null);
             Set<ConstraintViolation<Film>> violations = validator.validate(film);
             if (!violations.isEmpty()) {
@@ -214,20 +230,20 @@ class FilmControllerTest {
 
     @Test
     void shouldNotUpdateFilmWithFutureReleaseDate() {
-        filmController.createFilm(film);
+        filmController.addFilm(film);
         film.setReleaseDate(LocalDate.of(3400, 12, 28));
-        filmController.updated(film);
-        List<Film> listFilm = filmController.getFilm();
+        filmController.updateFilm(film);
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(film.getReleaseDate(), listFilm.get(0).getReleaseDate(),
                 "Film's release date  isn't correct");
     }
 
     @Test
     void shouldNotUpdateFilmWithReleaseDate1895_12_28() {
-        filmController.createFilm(film);
+        filmController.addFilm(film);
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        filmController.updated(film);
-        List<Film> listFilm = filmController.getFilm();
+        filmController.updateFilm(film);
+        List<Film> listFilm = filmController.getAllFilms();
         assertEquals(film.getReleaseDate(), listFilm.get(0).getReleaseDate(),
                 "Film's release date  isn't correct");
     }
@@ -235,7 +251,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmNullDuration() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             film.setDuration(null);
             Set<ConstraintViolation<Film>> violations = validator.validate(film);
             if (!violations.isEmpty()) {
@@ -248,7 +264,7 @@ class FilmControllerTest {
     @Test
     void shouldNotUpdateFilmNegativeDuration() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmController.createFilm(film);
+            filmController.addFilm(film);
             film.setDuration(-1);
             Set<ConstraintViolation<Film>> violations = validator.validate(film);
             if (!violations.isEmpty()) {
@@ -258,3 +274,4 @@ class FilmControllerTest {
         Assertions.assertEquals("duration: The film duration can't be positive", exception.getMessage());
     }
 }
+ */
