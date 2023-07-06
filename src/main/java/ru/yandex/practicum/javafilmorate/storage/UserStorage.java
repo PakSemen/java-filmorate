@@ -9,7 +9,7 @@ public interface UserStorage {
 
     User createUser(User user);
 
-    Optional getUserById(Long id);
+    Optional getUserById(Integer id);
 
     List<User> getAllUsers();
 
