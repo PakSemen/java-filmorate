@@ -26,6 +26,7 @@ public class UserService {
         validateUserName(user);
         userStorage.isUserExisted(user.getId());
         log.info("The user with id = {} {}", user.getId(), " has been updated");
+
         return userStorage.updateUser(user);
     }
 
@@ -48,7 +49,7 @@ public class UserService {
         log.info("The friend with id = {} {} {}", friendId, " has been added to the user with id = ", id);
         log.info("The friend with id = {} {} {}", id, " has been added to the user with id = ", friendId);
     }
-
+  
     public void removeFriendById(int id, int friendId) {
         User user = getUserById(id);
         log.info("The friend with id = {}{}{}", friendId, " has been removed to the user with id = ", id);

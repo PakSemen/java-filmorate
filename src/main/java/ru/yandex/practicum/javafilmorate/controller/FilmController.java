@@ -22,7 +22,6 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody @NotNull Film film) {
-        log.info("Create a film with id = {} ", film.getId());
         return filmService.createFilm(film);
     }
 
@@ -30,6 +29,7 @@ public class FilmController {
     public List<Film> getAllFilms() {
         log.info("GET {} films", filmService.getAllFilms().size());
         return filmService.getAllFilms();
+
     }
 
     @GetMapping("/{id}")
@@ -42,6 +42,7 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("The film with id = {}{}", film.getId(), " has been updated");
         return filmService.updateFilm(film);
+
     }
 
     @PutMapping("/{id}/like/{userId}")
