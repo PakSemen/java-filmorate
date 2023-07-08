@@ -28,6 +28,7 @@ public class UserService {
         validateUserName(user);
         userStorage.getUserById(user.getId());
         log.info("The user with id = {} {}", user.getId(), " has been updated");
+
         return userStorage.updateUser(user);
     }
 
