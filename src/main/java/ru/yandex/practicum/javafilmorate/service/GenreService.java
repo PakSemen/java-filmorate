@@ -20,11 +20,4 @@ public class GenreService {
         return genreStorage.getGenreById(id);
     }
 
-    public Genre getGenreById(Integer id) {
-        return genreStorage.getGenreById(id);
-    }
-
-    public List<Genre> getGenres() {
-        return genreStorage.getAllGenres();
-    }
 }

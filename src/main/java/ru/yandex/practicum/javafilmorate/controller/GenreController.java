@@ -17,17 +17,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenreController {
 
-    private final GenreService filmService;
+    private final GenreService genreService;
 
     @GetMapping
     public List<Genre> getAllGenres() {
         log.info("get all genres");
-        return filmService.getAllGenres();
+        return genreService.getAllGenres();
     }
 
     @GetMapping("/{id}")
     public Genre getGenreById(@PathVariable int id) {
         log.info("Get genre by id {}", id);
-        return filmService.getGenreById(id);
+        return genreService.getGenreById(id);
     }
 }

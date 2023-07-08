@@ -9,5 +9,4 @@ public interface MpaDao {
 
     List<Mpa> getAllMpa();
 
-    void isMpaExisted(int id);
 }

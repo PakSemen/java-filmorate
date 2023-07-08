@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.javafilmorate.model.User;
+import ru.yandex.practicum.javafilmorate.storage.FriendDao;
 import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.*;
 public class UserService {
 
     private final UserDao userStorage;
+    private final FriendDao friendStorage;
 
 
     public User createUser(User user) {
@@ -24,7 +26,7 @@ public class UserService {
 
     public User updateUser(User user) {
         validateUserName(user);
-        userStorage.isUserExisted(user.getId());
+        userStorage.getUserById(user.getId());
         log.info("The user with id = {} {}", user.getId(), " has been updated");
         return userStorage.updateUser(user);
     }
@@ -35,16 +37,17 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        userStorage.isUserExisted(id);
+        //userStorage.isUserExisted(id);
+        userStorage.getUserById(id);
         User user = userStorage.getUserById(id);
         log.info("Get the user with id = {}", id);
         return user;
     }
 
     public void addFriend(int id, int friendId) {
-        userStorage.isUserExisted(id);
-        userStorage.isUserExisted(friendId);
-        userStorage.addFriend(id, friendId);
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
+        friendStorage.addFriend(id, friendId);
         log.info("The friend with id = {} {} {}", friendId, " has been added to the user with id = ", id);
         log.info("The friend with id = {} {} {}", id, " has been added to the user with id = ", friendId);
     }
@@ -52,12 +55,11 @@ public class UserService {
     public void removeFriendById(int id, int friendId) {
         User user = getUserById(id);
         log.info("The friend with id = {}{}{}", friendId, " has been removed to the user with id = ", id);
-        user.getFriends().remove(friendId);
-        userStorage.delete(id, friendId);
+        friendStorage.deleteFriend(id, friendId);
     }
 
     public List<User> getAllFriends(int id) {
-        List<User> friends = new ArrayList<>(userStorage.getAllFriends(id));
+        List<User> friends = friendStorage.getAllFriends(id);
         log.info("Get All friends");
         return friends;
     }

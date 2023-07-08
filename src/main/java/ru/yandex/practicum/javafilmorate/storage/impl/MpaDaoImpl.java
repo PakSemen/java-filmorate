@@ -24,9 +24,14 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Mpa getMpaById(int id) {
-        this.isMpaExisted(id);
+        //this.isMpaExisted(id);
         String sqlQuery = "SELECT * FROM rating_mpa WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, id);
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        if (!rowSet.next()) {
+            throw new NotFoundException("Mpa id: " + id + " does not exist...");
+        } else {
+            return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, id);
+        }
     }
 
     @Override
@@ -39,12 +44,4 @@ public class MpaDaoImpl implements MpaDao {
         return new Mpa(rs.getInt("id"), rs.getString("name"));
     }
 
-    @Override
-    public void isMpaExisted(int id) {
-        String sqlQuery = "SELECT name FROM rating_mpa WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("Mpa id: " + id + " does not exist...");
-        }
-    }
 }

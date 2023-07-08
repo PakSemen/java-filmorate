@@ -6,6 +6,7 @@ import ru.yandex.practicum.javafilmorate.model.Genre;
 import java.util.List;
 
 public interface GenreDao {
+
     void createFilmGenre(Film film);
 
     Genre getGenreById(int id);
@@ -14,5 +15,6 @@ public interface GenreDao {
 
     void updateFilmGenre(Film film);
 
-    void isGenreExisted(int id);
+
+    void loadGenres(List<Film> films);
 }

@@ -16,10 +16,8 @@ import javax.validation.constraints.NotNull;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -62,7 +60,12 @@ public class UserDaoImpl implements UserDao {
     public User getUserById(int id) {
         String sqlQuery = "SELECT * FROM users WHERE id = ?";
         log.info("Get user with id = {}", id);
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        if (!rowSet.next()) {
+            throw new NotFoundException("User with id= " + id + " doesn't exist...");
+        } else {
+            return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
+        }
     }
 
     @Override
@@ -85,65 +88,4 @@ public class UserDaoImpl implements UserDao {
         return jdbcTemplate.query(sqlQuery, this::makeUser);
     }
 
-    @Override
-    public void addFriend(int id, int friendId) {
-        String sqlQuery = "INSERT INTO friendship (user_id,friend_user_id) VALUES (?,?)";
-        log.info("Add friend with id = {} to user with id = {}", friendId, id);
-        jdbcTemplate.update(sqlQuery, id, friendId);
-    }
-
-    @Override
-    public void delete(int id, int friendId) {
-        String sqlQuery = "DELETE FROM friendship WHERE user_id = ? AND friend_user_id = ?";
-        log.info("Delete friend with id = {} to user with id = {}", friendId, id);
-        jdbcTemplate.update(sqlQuery, id, friendId);
-    }
-
-    @Override
-    public List<User> getCommonFriends(int id, int friendId) {
-        String sqlQuery = "SELECT users.* " +
-                "FROM users " +
-                "JOIN FRIENDSHIP AS f1 on(users.id = f1.friend_id AND f1.user_id = ?) " +
-                "JOIN FRIENDSHIP AS f2 on (users.id = f2.friend_id AND f2.user_id =?)";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id, friendId);
-        List<User> commonFriends = new ArrayList<>();
-        while (rs.next()) {
-            commonFriends.add(new User(rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("login"),
-                    rs.getString("email"),
-                    Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()));
-        }
-        log.info("Get common te friend");
-        return commonFriends.stream().distinct().collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> getAllFriends(int id) {
-        String sqlQuery = "SELECT * FROM users WHERE id IN " +
-                "(SELECT friend_user_id AS id FROM friendship WHERE user_id = ?)";
-        SqlRowSet rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        List<User> friends = new ArrayList<>();
-        while (rs.next()) {
-            friends.add(new User(rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("login"),
-                    rs.getString("email"),
-                    Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()));
-        }
-        log.info("Get All friends of user with id = {}", id);
-        for (User friend : friends) {
-            System.out.println(friend.toString());
-        }
-        return friends;
-    }
-
-    @Override
-    public void isUserExisted(int id) {
-        String sqlQuery = "SELECT id FROM users WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("User with id= " + id + " doesn't exist...");
-        }
-    }
 }

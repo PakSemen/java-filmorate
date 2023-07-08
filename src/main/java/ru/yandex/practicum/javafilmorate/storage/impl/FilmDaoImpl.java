@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.Film;
-import ru.yandex.practicum.javafilmorate.model.Genre;
 import ru.yandex.practicum.javafilmorate.model.Mpa;
 import ru.yandex.practicum.javafilmorate.storage.FilmDao;
 
@@ -30,26 +29,14 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     private @NotNull Film makeFilm(@NotNull ResultSet rs, int rowNum) throws SQLException {
-
-        int mpaId = rs.getInt("rating_id");
-        String sqlQueryMpa = "SELECT * FROM rating_mpa WHERE id = ?";
-        Mpa mpa = jdbcTemplate.queryForObject(sqlQueryMpa, this::makeMpa, mpaId);
-
-        int filmId = rs.getInt("id");
-        String sqlQueryGenre = "SELECT * FROM genres WHERE id IN (SELECT genre_id FROM film_genre WHERE film_id = ?)";
-        List<Genre> genre = jdbcTemplate.query(sqlQueryGenre, this::makeGenre, filmId);
-
-        String sqlQueryLikes = "SELECT user_id FROM likes WHERE film_id = ?";
-        List<Integer> likes = jdbcTemplate.queryForList(sqlQueryLikes, Integer.class, filmId);
-
+        Mpa mpa = new Mpa(rs.getInt("rating_id"),rs.getString("mpa_name"));
         return new Film(rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getDate("release_date").toLocalDate(),
                 rs.getInt("duration"),
-                new HashSet<>(likes),
                 mpa,
-                new LinkedHashSet<>(genre));
+                new LinkedHashSet<>());
     }
 
     @Override
@@ -71,14 +58,21 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getAllFilms() {
-        String sqlQuery = "SELECT * FROM films";
+        String sqlQuery = "SELECT f.*,  rm.name AS mpa_name FROM films AS f " +
+                "LEFT JOIN rating_mpa AS rm ON f.rating_id = rm.id";
         return jdbcTemplate.query(sqlQuery, this::makeFilm);
     }
 
     @Override
     public Film getFilmById(int id) {
-        String sqlQuery = "SELECT * FROM films WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
+        String sqlQuery = "SELECT f.*,  rm.name AS mpa_name FROM films AS f " +
+                "LEFT JOIN rating_mpa AS rm ON f.rating_id = rm.id WHERE f.id = ?";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        if (!rowSet.next()) {
+            throw new NotFoundException("Film id: " + id + " does not exist...");
+        } else {
+            return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
+        }
     }
 
     @Override
@@ -96,32 +90,11 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public void createLike(int id, int userId) {
-        String sqlQuery = "INSERT INTO likes (film_id, user_id) VALUES (?,?)";
-        jdbcTemplate.update(sqlQuery, id, userId);
-    }
-
-    @Override
-    public void deleteLike(int id, int userId) {
-        String sqlQuery = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
-        jdbcTemplate.update(sqlQuery, id, userId);
-    }
-
-
-    private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getInt("id"), rs.getString("name"));
-    }
-
-    private Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(rs.getInt("id"), rs.getString("name"));
-    }
-
-    @Override
-    public void isFilmExisted(int id) {
-        String sqlQuery = "SELECT id FROM films WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("Film id: " + id + " does not exist...");
-        }
+    public List<Film> getFavoritesFilms(int id) {
+        String sqlQuery = "SELECT f.*, rm.name AS mpa_name FROM films AS f " +
+                "LEFT JOIN rating_mpa AS rm ON f.rating_id = rm.id " +
+                "LEFT JOIN likes AS l ON f.id = l.film_id " +
+                "GROUP BY f.id ORDER BY COUNT(l.user_id) DESC LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, this::makeFilm, id);
     }
 }
