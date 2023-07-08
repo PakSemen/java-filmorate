@@ -16,7 +16,6 @@ import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 import javax.validation.*;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
