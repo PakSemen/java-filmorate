@@ -14,7 +14,6 @@ public interface UserDao {
 
     User updateUser(User user);
 
-//    void isUserExisted(int id);
 
 }
 

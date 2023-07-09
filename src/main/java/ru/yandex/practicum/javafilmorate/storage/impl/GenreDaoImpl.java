@@ -2,7 +2,6 @@ package ru.yandex.practicum.javafilmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -11,11 +10,8 @@ import ru.yandex.practicum.javafilmorate.model.Film;
 import ru.yandex.practicum.javafilmorate.model.Genre;
 import ru.yandex.practicum.javafilmorate.storage.GenreDao;
 
-import javax.validation.constraints.NotNull;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,29 +27,6 @@ public class GenreDaoImpl implements GenreDao {
     @Autowired
     public GenreDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    @Override
-    public void createFilmGenre(Film film) {
-        if (film.getGenres() == null || film.getGenres().isEmpty()) {
-            return;
-        }
-        String sql = "INSERT INTO film_genre (film_id, genre_id) " +
-                "VALUES(?,?)";
-        List<Genre> genres = new ArrayList<>(film.getGenres());
-        jdbcTemplate.batchUpdate(sql,
-                new BatchPreparedStatementSetter() {
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setLong(1, film.getId());
-                        ps.setLong(2, genres.get(i).getId());
-                    }
-
-                    @Override
-                    public int getBatchSize() {
-                        return film.getGenres().size();
-                    }
-                });
     }
 
     @Override
@@ -73,16 +46,10 @@ public class GenreDaoImpl implements GenreDao {
         return jdbcTemplate.query(sqlQuery, this::makeGenre);
     }
 
-    @Override
-    public void updateFilmGenre(@NotNull Film film) {
-        String sqlQueryGenres = "DELETE FROM film_genre WHERE film_id = ?";
-        jdbcTemplate.update(sqlQueryGenres, film.getId());
-        this.createFilmGenre(film);
-    }
-
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
         return new Genre(rs.getInt("id"), rs.getString("name"));
     }
+
 
     @Override
     public void loadGenres(List<Film> films) {

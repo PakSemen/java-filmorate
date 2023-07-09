@@ -1,6 +1,7 @@
 package ru.yandex.practicum.javafilmorate.storage.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -8,6 +9,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.Film;
+import ru.yandex.practicum.javafilmorate.model.Genre;
 import ru.yandex.practicum.javafilmorate.model.Mpa;
 import ru.yandex.practicum.javafilmorate.storage.FilmDao;
 
@@ -40,20 +42,44 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public Film createFilm(@NotNull Film film) {
+    public void save(Film film) {
         String sqlQuery = "INSERT INTO films (name,description,release_date,duration,rating_id) VALUES (?,?,?,?,?)";
-        KeyHolder id = new GeneratedKeyHolder();
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sqlQuery, new String[]{"id"});
-            ps.setString(1, film.getName());
-            ps.setString(2, film.getDescription());
-            ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
-            ps.setInt(4, film.getDuration());
-            ps.setInt(5, film.getMpa().getId());
-            return ps;
-        }, id);
-        film.setId(Objects.requireNonNull(id.getKey()).intValue());
-        return film;
+            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"ID"});
+            stmt.setString(1, film.getName());
+            stmt.setString(2, film.getDescription());
+            stmt.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
+            stmt.setInt(4, film.getDuration());
+            stmt.setInt(5, film.getMpa().getId());
+            return stmt;
+        }, keyHolder);
+        film.setId(Objects.requireNonNull(keyHolder.getKey().intValue()));
+
+        saveGenres(film);
+    }
+
+    private void saveGenres(Film film) {
+        final Integer filmId = film.getId();
+        jdbcTemplate.update("delete from FILM_GENRE where FILM_ID = ?", filmId);
+        final Set<Genre> genres = film.getGenres();
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+        final ArrayList<Genre> genreList = new ArrayList<>(genres);
+        jdbcTemplate.batchUpdate(
+                "insert into FILM_GENRE (FILM_ID, GENRE_ID) values (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setLong(1, filmId);
+                        ps.setLong(2, genreList.get(i).getId());
+                    }
+
+                    public int getBatchSize() {
+                        return genreList.size();
+                    }
+                });
     }
 
     @Override
@@ -76,17 +102,11 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public Film updateFilm(@NotNull Film film) {
-        String sqlQuery = "UPDATE films SET " +
-                "name = ?," +
-                "description = ?," +
-                "release_date = ?," +
-                "duration = ?," +
-                "rating_id = ?" +
-                "WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
-                film.getMpa().getId(), film.getId());
-        return film;
+    public void updateFilm(Film film) {
+        this.getFilmById(film.getId());
+        String sqlQuery = "update FILMS SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, RATING_ID = ?" + " WHERE ID = ?";
+        jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
+        saveGenres(film);
     }
 
     @Override

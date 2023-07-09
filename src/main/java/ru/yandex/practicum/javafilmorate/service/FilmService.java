@@ -14,45 +14,36 @@ import java.util.List;
 public class FilmService {
     private final FilmDao filmStorage;
     private final UserDao userStorage;
-    private final MpaDao daoStorage;
     private final GenreDao genreStorage;
     private final LikeDao likeStorage;
 
     public Film createFilm(Film film) {
-        filmStorage.createFilm(film);
-        genreStorage.createFilmGenre(film);
+        filmStorage.save(film);
         log.info("Create a film with id = {} ", film.getId());
         return film;
     }
 
+
     public Film updateFilm(Film film) {
-        filmStorage.getFilmById(film.getId());
-        genreStorage.updateFilmGenre(film);
-        daoStorage.getMpaById(film.getMpa().getId());
         filmStorage.updateFilm(film);
         log.info("Update the film with id = {} ", film.getId());
         return film;
     }
 
     public List<Film> getAllFilms() {
-        log.info("GET {} films", filmStorage.getAllFilms().size());
         List<Film> films = filmStorage.getAllFilms();
         genreStorage.loadGenres(films);
+        log.info("GET {} films", filmStorage.getAllFilms().size());
         return films;
     }
 
     public Film getFilmById(int id) {
-        filmStorage.getFilmById(id);
         Film film = filmStorage.getFilmById(id);
         genreStorage.loadGenres(List.of(film));
         return film;
     }
 
     public void addLikes(int filmId, int userId) {
-        filmStorage.getFilmById(filmId);
-        userStorage.getUserById(userId);
-        filmStorage.getFilmById(filmId);
-        userStorage.getUserById(userId);
         likeStorage.createLike(filmId, userId);
         log.info("Film id: {} like from user: {} ", filmId, userId);
     }

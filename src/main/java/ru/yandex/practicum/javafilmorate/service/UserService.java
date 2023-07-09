@@ -33,21 +33,18 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        log.info("Get {} users ", userStorage.getAllUsers().size());
-        return userStorage.getAllUsers();
+        List<User> user = userStorage.getAllUsers();
+        log.info("GET {} users", userStorage.getAllUsers().size());
+        return user;
     }
 
     public User getUserById(int id) {
-        //userStorage.isUserExisted(id);
-        userStorage.getUserById(id);
         User user = userStorage.getUserById(id);
         log.info("Get the user with id = {}", id);
         return user;
     }
 
     public void addFriend(int id, int friendId) {
-        userStorage.getUserById(id);
-        userStorage.getUserById(friendId);
         friendStorage.addFriend(id, friendId);
         log.info("The friend with id = {} {} {}", friendId, " has been added to the user with id = ", id);
         log.info("The friend with id = {} {} {}", id, " has been added to the user with id = ", friendId);

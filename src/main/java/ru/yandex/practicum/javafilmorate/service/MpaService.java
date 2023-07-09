@@ -20,6 +20,8 @@ public class MpaService {
     }
 
     public List<Mpa> getAllMpa() {
-        return mpaStorage.getAllMpa();
+        List<Mpa> mpa = mpaStorage.getAllMpa();
+        log.info("GET {} Mpa", mpaStorage.getAllMpa().size());
+        return mpa;
     }
 }

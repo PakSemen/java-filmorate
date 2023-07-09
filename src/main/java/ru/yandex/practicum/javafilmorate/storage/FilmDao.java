@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface FilmDao {
 
-    Film createFilm(Film film);
+    void save(Film film);
 
     Film getFilmById(int id);
 
     List<Film> getAllFilms();
 
-    Film updateFilm(Film film);
+    void updateFilm(Film film);
 
     List<Film> getFavoritesFilms(int id);
 

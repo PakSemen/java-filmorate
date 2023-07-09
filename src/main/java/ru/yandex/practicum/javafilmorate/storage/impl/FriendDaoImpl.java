@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.javafilmorate.model.User;
 import ru.yandex.practicum.javafilmorate.storage.FriendDao;
+import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +19,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FriendDaoImpl implements FriendDao {
     private final JdbcTemplate jdbcTemplate;
+    private final UserDao userStorage;
 
     @Override
     public void addFriend(int id, int friendId) {
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
         String sqlQuery = "INSERT INTO friendship (user_id,friend_user_id) VALUES (?,?)";
         log.info("Add friend with id = {} to user with id = {}", friendId, id);
         jdbcTemplate.update(sqlQuery, id, friendId);

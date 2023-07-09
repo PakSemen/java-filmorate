@@ -24,7 +24,6 @@ public class MpaDaoImpl implements MpaDao {
 
     @Override
     public Mpa getMpaById(int id) {
-        //this.isMpaExisted(id);
         String sqlQuery = "SELECT * FROM rating_mpa WHERE id = ?";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
         if (!rowSet.next()) {

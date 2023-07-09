@@ -59,7 +59,7 @@ class FilmDaoImplTest {
         filmOne = new Film("Star Wars", "Star Wars is an American epic space opera created by George Lucas",
                 LocalDate.of(1977, 5, 25), 248345,
                 new Mpa(3, "PG-13"), new LinkedHashSet<>());
-        filmStorage.createFilm(filmOne);
+        filmStorage.save(filmOne);
         assertEquals("Star Wars", filmOne.getName(), "Film's name isn't correct");
         assertEquals("Star Wars is an American epic space opera created by George Lucas",
                 filmOne.getDescription(), "Film's description isn't correct");
@@ -147,7 +147,7 @@ class FilmDaoImplTest {
 
     @Test
     void shouldUpdateFilm() {
-        filmStorage.createFilm(filmSecond);
+        filmStorage.save(filmSecond);
         filmSecond.setName("New name");
         filmSecond.setDescription("New description");
         filmSecond.setReleaseDate((LocalDate.of(2005, 12, 28)));
@@ -161,7 +161,7 @@ class FilmDaoImplTest {
     @Test
     void shouldNotUpdateFilmWithEmptyName() {
         ValidationException exception = Assertions.assertThrows(ValidationException.class, () -> {
-            filmStorage.createFilm(filmSecond);
+            filmStorage.save(filmSecond);
             filmSecond.setName("");
             Set<ConstraintViolation<Film>> violations = validator.validate(filmSecond);
             if (!violations.isEmpty()) {
