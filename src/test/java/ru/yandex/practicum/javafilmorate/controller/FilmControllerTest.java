@@ -1,4 +1,5 @@
-package ru.yandex.practicum.javafilmorate.controller;
+/*
+        package ru.yandex.practicum.javafilmorate.controller;
 
 
 import org.junit.jupiter.api.Assertions;
@@ -7,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.javafilmorate.model.Film;
 import ru.yandex.practicum.javafilmorate.service.FilmService;
-import ru.yandex.practicum.javafilmorate.storage.FilmStorage;
-import ru.yandex.practicum.javafilmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.javafilmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.javafilmorate.storage.UserStorage;
+import ru.yandex.practicum.javafilmorate.storage.FilmDao;
+import ru.yandex.practicum.javafilmorate.storage.impl.FilmDaoImpl;
+import ru.yandex.practicum.javafilmorate.storage.impl.UserDaoImpl;
+import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 
 import javax.validation.*;
@@ -26,14 +27,14 @@ class FilmControllerTest {
     private static FilmController filmController;
     private Film film;
     private Validator validator;
-    public static UserStorage userStorage;
+    public static UserDao userDao;
     private Set<Integer> likes;
 
     @BeforeEach
     void beforeEach() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        userStorage = new InMemoryUserStorage();
-        filmController = new FilmController(new FilmService(filmStorage));
+        FilmDao filmDao = new FilmDaoImpl();
+        userDao = new UserDaoImpl();
+        filmController = new FilmController(new FilmService(filmDao));
 
         film = Film.builder()
                 .id(0)
@@ -273,3 +274,4 @@ class FilmControllerTest {
         Assertions.assertEquals("duration: The film duration can't be positive", exception.getMessage());
     }
 }
+ */

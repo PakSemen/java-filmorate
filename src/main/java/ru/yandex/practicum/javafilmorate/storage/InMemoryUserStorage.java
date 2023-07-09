@@ -12,8 +12,8 @@ import java.util.*;
 @Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private long userId = 0;
-    private final Map<Long, User> users = new HashMap<>();
+    private Integer userId = 0;
+    private final Map<Integer, User> users = new HashMap<>();
 
     @Override
     public User createUser(User user) {
@@ -24,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> getUserById(Integer id) {
         return Optional.ofNullable(users.get(id));
     }
 
@@ -36,7 +36,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        long id = user.getId();
+        Integer id = user.getId();
         if (users.containsKey(id)) {
             users.put(id, user);
         } else {
