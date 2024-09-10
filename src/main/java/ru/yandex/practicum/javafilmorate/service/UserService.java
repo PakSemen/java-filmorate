@@ -1,85 +1,68 @@
 package ru.yandex.practicum.javafilmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
-import ru.yandex.practicum.javafilmorate.exception.ValidationException;
 import ru.yandex.practicum.javafilmorate.model.User;
-import ru.yandex.practicum.javafilmorate.storage.UserStorage;
+import ru.yandex.practicum.javafilmorate.storage.FriendDao;
+import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final UserDao userStorage;
+    private final FriendDao friendStorage;
+
 
     public User createUser(User user) {
         validateUserName(user);
+        log.info("The user with id = {} has been created, ", user.getId());
         return userStorage.createUser(user);
     }
 
     public User updateUser(User user) {
         validateUserName(user);
+        userStorage.getUserById(user.getId());
+        log.info("The user with id = {} {}", user.getId(), " has been updated");
+
         return userStorage.updateUser(user);
     }
 
     public List<User> getAllUsers() {
-        List<User> users = userStorage.getAllUsers();
-        return users;
+        List<User> user = userStorage.getAllUsers();
+        log.info("GET {} users", userStorage.getAllUsers().size());
+        return user;
     }
 
-    public User getUserById(long id) {
+    public User getUserById(int id) {
+        User user = userStorage.getUserById(id);
         log.info("Get the user with id = {}", id);
-        Optional<User> user = userStorage.getUserById(id);
-        if (user.isPresent()) {
-            log.info("Get the user with id = {}", id);
-            return user.get();
-        } else {
-            throw new NotFoundException("User with id = " + id + " not found");
-        }
+        return user;
     }
 
-
-    public void addFriend(Long id, Long friendId) {
-        User user = getUserById(id);
-        if (user.getFriends().contains(friendId)) {
-            log.info("The friend with id = {} {} {}", friendId, " has been friend of the user with id = {}", id);
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "User " + id + " and the user " + friendId +
-                    "have been friends yet ");
-        }
-        User friend = getUserById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
-
+    public void addFriend(int id, int friendId) {
+        friendStorage.addFriend(id, friendId);
         log.info("The friend with id = {} {} {}", friendId, " has been added to the user with id = ", id);
         log.info("The friend with id = {} {} {}", id, " has been added to the user with id = ", friendId);
     }
 
-    public void removeFriendById(long id, long friendId) {
+    public void removeFriendById(int id, int friendId) {
         User user = getUserById(id);
         log.info("The friend with id = {}{}{}", friendId, " has been removed to the user with id = ", id);
-        user.getFriends().remove(friendId);
+        friendStorage.deleteFriend(id, friendId);
     }
 
-    public List<User> getAllFriends(long id) {
+    public List<User> getAllFriends(int id) {
+        List<User> friends = friendStorage.getAllFriends(id);
         log.info("Get All friends");
-        return getUserById(id).getFriends()
-                .stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return friends;
     }
 
-    public List<User> getCommonFriends(long userId, long friendId) {
+    public List<User> getCommonFriends(int userId, int friendId) {
         log.info("Get common friends");
         List<User> friends = getAllFriends(userId);
         friends.retainAll(getAllFriends(friendId));
@@ -93,4 +76,3 @@ public class UserService {
         }
     }
 }
-
